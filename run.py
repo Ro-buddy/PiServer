@@ -56,7 +56,7 @@ def sendKeyPressEvent():
     
 def initPiGpio():
     GPIO.setmode(GPIO.BOARD)
-    for i in range(0,26):
+    for i in range(0,27):
     	if i not in Pi_Non_GPIO_Pin_List:
             setGpioInput(i, GPIO.PUD_UP, gpioInputCallback, 10)
          
