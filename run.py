@@ -98,12 +98,13 @@ def piGpioCommandCallback(handler):
             setting = GPIO.gpio_function(pin_number)
             if setting==GPIO.IN:
                 return (handler.data+'in')
-            elif setting==GPIO.OUT:
+            else:
                 return (handler.data+'out')
         elif 'set' in command_string_list and 'In' in command_string_list:
             setGpioInput(pin_number, GPIO.PUD_UP, gpioInputCallback, 10)
             return handler.data	
         elif 'set' in command_string_list and 'Out' in command_string_list:
+            GPIO.remove_event_detect(pin_number)
             GPIO.setup(pin_number, GPIO.OUT)
             return handler.data	
       
