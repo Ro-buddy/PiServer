@@ -58,6 +58,7 @@ def initPiGpio():
     GPIO.setmode(GPIO.BOARD)
     for i in range(0,27):
     	if i not in Pi_Non_GPIO_Pin_List:
+            print "Set Pin %d to Input Mode" %i
             setGpioInput(i, GPIO.PUD_UP, gpioInputCallback, 10)
          
               
@@ -127,6 +128,14 @@ def piGpioCommandCallback(handler):
             GPIO.remove_event_detect(pin_number)
             GPIO.setup(pin_number, GPIO.OUT)
             return handler.data	
+        elif 'level' in command_string_list:
+            if GPIO.input(pin_number)==1:
+                msgOut = 'pi.io.level.1.' + str(pin_number)
+            else:
+                msgOut = 'pi.io.level.0.' + str(pin_number)
+            sendToTcpServer(msgOut)
+            return ''
+
       
     return 'error'          
     
@@ -144,8 +153,9 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         Robuddy_IpAdress = self.client_address[0]
         print "Robuddy_IpAdress:%s" %Robuddy_IpAdress
         reply=piGpioCommandCallback(self)
-        self.request.send(reply)
-        print "Send message: %s" %reply
+        if reply!='':
+            self.request.send(reply)
+            print "Send message: %s" %reply
 
 
 
@@ -170,6 +180,7 @@ def sendToTcpServer(msgOut):
     try:
         sock.sendall(msgOut)
         print "msg sent"
+        print msgOut
     except:
         print "can't send via tcp"
         return
