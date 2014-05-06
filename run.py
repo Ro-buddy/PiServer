@@ -12,13 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Copyright 2014 Robological. All Rights Reserved.
+#
+# Licensed under the GNU General Public License, version 2 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.gnu.org/licenses/gpl-2.0.html
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import SocketServer
 import RPi.GPIO as GPIO
 import socket
 
 
 Pi_Mode = 'Board'
-GPIO.setmode(GPIO.BOARD)
+
 app_id_address_list=[]
 Robuddy_IpAdress=''
 Robuddy_TcpPort=30002 ;
@@ -40,7 +54,12 @@ def setGpioOutput(pin_number, output_value):
 def sendKeyPressEvent():
     return
     
-
+def initPiGpio():
+    GPIO.setmode(GPIO.BOARD)
+    for i in range(0,26):
+    	if i not in Pi_Non_GPIO_Pin_List:
+            setGpioInput(i, GPIO.PUD_UP, gpioInputCallback, 10)
+         
               
 def gpioInputCallback(pin_number):
     print "Input from: %d" % pin_number
@@ -56,8 +75,8 @@ def gpioInputCallback(pin_number):
 def setGpioInput(pin_number, pull_up_down, call_back_func, bounce_time):
     if (pin_number not in Pi_Non_GPIO_Pin_List) and pin_number<=30:
         setting = GPIO.gpio_function(pin_number)
-        if setting==GPIO.IN:
-            return    
+        #if setting==GPIO.IN:
+        #    return    
         GPIO.setup(pin_number, GPIO.IN, pull_up_down)
         GPIO.add_event_detect(pin_number, GPIO.BOTH)
         #if pull_up_down==GPIO.PUD_UP: 
@@ -104,6 +123,7 @@ def piGpioCommandCallback(handler):
             setGpioInput(pin_number, GPIO.PUD_UP, gpioInputCallback, 10)
             return handler.data	
         elif 'set' in command_string_list and 'Out' in command_string_list:
+            print "set pin to output"
             GPIO.remove_event_detect(pin_number)
             GPIO.setup(pin_number, GPIO.OUT)
             return handler.data	
@@ -176,9 +196,12 @@ try:
     #GPIO.add_event_detect(7, GPIO.BOTH)
     #GPIO.add_event_callback(7, gpioInputCallback, 5)
     #setGpioInput(7, GPIO.PUD_UP, gpioInputCallback, 10)
+    initPiGpio()
     server.serve_forever()
 except KeyboardInterrupt:
     print "Ctrl-C Stopped the Server"
     GPIO.cleanup()
     print "GPIO is cleaned"
     server.shutdown()
+
+
